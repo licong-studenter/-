@@ -1,0 +1,2023 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI 进化史 · 自制短片档案库</title>
+<style>
+:root{
+  --bg:#f4ebd9; --text:#2c3e50; --accent:#e67e22; --cyan:#16a085; --red:#c0392b;
+  --deep:#0a0e14; --grid:rgba(44,62,80,.05);
+}
+*{margin:0;padding:0;box-sizing:border-box;cursor:none}
+body,html{
+  width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--text);
+  font-family:'Courier New',Courier,monospace;
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:40px 40px;
+}
+#cursor{
+  position:fixed;width:20px;height:20px;border:2px solid var(--cyan);border-radius:50%;
+  pointer-events:none;z-index:9999;transform:translate(-50%,-50%);
+  box-shadow:0 0 15px var(--cyan);transition:width .1s,height .1s,background .1s;
+}
+#cursor::before,#cursor::after{content:'';position:absolute;background:var(--cyan)}
+#cursor::before{top:50%;left:-5px;width:30px;height:1px}
+#cursor::after{left:50%;top:-5px;width:1px;height:30px}
+#cursor.clicking{width:40px;height:40px;background:rgba(22,160,133,.2)}
+
+#ppt-container{position:relative;width:100vw;height:100vh}
+.slide{
+  position:absolute;inset:0;width:100%;height:100%;
+  display:flex;flex-direction:column;justify-content:center;align-items:center;
+  padding:4vw;opacity:0;visibility:hidden;transition:opacity .6s ease,transform .6s ease;
+  transform:scale(1.02);overflow:hidden;
+}
+.slide.active{opacity:1;visibility:visible;transform:scale(1)}
+
+.bg-shape{position:absolute;z-index:-1;opacity:.35;animation:float 10s infinite alternate ease-in-out}
+.shape-circle{width:40vw;height:40vw;border-radius:50%;background:radial-gradient(circle,rgba(241,196,15,.45),transparent);top:-10%;left:-10%}
+.shape-tri{width:0;height:0;border-left:14vw solid transparent;border-right:14vw solid transparent;border-bottom:24vw solid rgba(22,160,133,.18);bottom:-5%;right:8%;animation-duration:12s}
+.shape-rect{width:14vw;height:55vh;background:rgba(230,126,34,.18);top:22%;left:4%;animation-duration:15s}
+@keyframes float{0%{transform:translate(0,0) rotate(0)}100%{transform:translate(2vw,3vh) rotate(5deg)}}
+
+.big-title{font-size:clamp(2.2rem,4.5vw,4rem);font-weight:900;margin-bottom:18px;text-align:center;letter-spacing:-2px;line-height:1.15}
+.year-badge{
+  position:absolute;top:5vh;left:5vw;background:var(--red);color:#fff;padding:5px 16px;
+  border-radius:20px;font-weight:bold;box-shadow:3px 3px 0 var(--text);
+  font-size:clamp(.8rem,1.1vw,1.1rem);z-index:10;
+}
+.year-badge.cyan{background:var(--cyan)}
+.year-badge.dark{background:var(--deep)}
+
+.typing{
+  font-size:clamp(1rem,1.5vw,1.5rem);line-height:1.8;border-right:3px solid var(--accent);
+  white-space:pre-wrap;max-width:820px;margin:14px 0;animation:blink .8s infinite;
+}
+@keyframes blink{50%{border-color:transparent}}
+
+.flex-center{display:flex;justify-content:center;align-items:center;gap:20px;flex-wrap:wrap;width:100%}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:24px;width:100%;max-width:1050px}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;width:100%;max-width:1100px}
+@media(max-width:900px){.grid-2,.grid-3{grid-template-columns:1fr}}
+
+.flip-card{background:transparent;width:100%;min-height:190px;perspective:1000px}
+.flip-card-inner{position:relative;width:100%;height:100%;min-height:190px;text-align:center;transition:transform .6s;transform-style:preserve-3d}
+.flip-card:hover .flip-card-inner{transform:rotateY(180deg)}
+.flip-card-front,.flip-card-back{
+  position:absolute;inset:0;width:100%;height:100%;-webkit-backface-visibility:hidden;backface-visibility:hidden;
+  border:2px solid var(--text);border-radius:8px;box-shadow:5px 5px 0 var(--text);
+  display:flex;flex-direction:column;justify-content:center;padding:16px;
+}
+.flip-card-front{background:var(--bg);color:var(--text)}
+.flip-card-back{background:var(--cyan);color:#fff;transform:rotateY(180deg);font-size:.92rem;line-height:1.65}
+
+.data-bar-wrap{width:100%;max-width:820px;margin:8px 0}
+.data-bar-label{display:flex;justify-content:space-between;font-size:.88rem;margin-bottom:4px}
+.data-bar-track{height:10px;background:rgba(44,62,80,.1);border-radius:5px;overflow:hidden}
+.data-bar-fill{height:100%;width:0;border-radius:5px;background:linear-gradient(90deg,var(--cyan),var(--accent));transition:width 1.1s cubic-bezier(.22,1,.36,1)}
+.slide.active .data-bar-fill{width:var(--w)}
+
+.matrix-bg{position:absolute;inset:0;background:rgba(0,0,0,.88);color:#0F0;font-family:monospace;font-size:1.1rem;line-height:1.2;overflow:hidden;opacity:0;transition:opacity .5s}
+.slide.active .matrix-bg{opacity:1}
+.matrix-col{position:absolute;top:-100%;animation:fall linear infinite}
+@keyframes fall{to{top:100%}}
+
+.reveal{opacity:0;transform:translateY(18px)}
+.slide.active .reveal{animation:fadeUp .75s forwards}
+.slide.active .reveal:nth-child(1){animation-delay:.08s}
+.slide.active .reveal:nth-child(2){animation-delay:.22s}
+.slide.active .reveal:nth-child(3){animation-delay:.36s}
+.slide.active .reveal:nth-child(4){animation-delay:.5s}
+@keyframes fadeUp{to{opacity:1;transform:translateY(0)}}
+
+#progress-bar{position:fixed;top:0;left:0;height:4px;background:var(--accent);width:0;transition:width .3s;z-index:1000}
+#controls{position:fixed;bottom:18px;width:100%;display:flex;justify-content:center;gap:8px;z-index:1000;flex-wrap:wrap}
+.dot{width:10px;height:10px;border-radius:50%;background:rgba(44,62,80,.2);transition:.3s}
+.dot.active{background:var(--red);transform:scale(1.5);box-shadow:0 0 10px var(--red)}
+
+.slide.dark{background:#2c3e50;color:#f4ebd9}
+.slide.dark .big-title{color:var(--accent)}
+
+.note{font-size:clamp(.75rem,1vw,.9rem);opacity:.62;max-width:860px;text-align:center;line-height:1.7;margin-top:10px}
+.accent-text{color:var(--accent);font-weight:bold}
+.cyan-text{color:var(--cyan);font-weight:bold}
+.red-text{color:var(--red);font-weight:bold}
+
+/* 交互组件 */
+.turing-box,.eigen-panel,.policy-slider-wrap,.scale-interactive{
+  width:100%;max-width:760px;background:rgba(244,235,217,.88);border:2px solid var(--text);
+  border-radius:10px;padding:18px 20px;box-shadow:5px 5px 0 var(--text);
+}
+.turing-log{min-height:110px;max-height:180px;overflow-y:auto;font-size:.92rem;line-height:1.8;margin-bottom:10px}
+.turing-q{color:var(--cyan);font-weight:bold;margin-top:6px}
+.turing-a{color:var(--text);margin:4px 0 10px 14px}
+.turing-verdict{font-size:.82rem;opacity:.7;margin-bottom:8px}
+.btn-cyber{
+  background:var(--text);color:var(--bg);border:none;padding:9px 20px;border-radius:6px;
+  font-family:inherit;font-weight:bold;cursor:pointer;margin:4px 4px 0 0;transition:.2s;
+}
+.btn-cyber:hover{background:var(--accent);transform:translateY(-1px)}
+.btn-cyber:disabled{opacity:.45;cursor:not-allowed}
+
+.cyber-range{width:100%;accent-color:var(--accent);height:6px;margin:12px 0}
+.policy-year-display{text-align:center;font-size:2rem;font-weight:900;color:var(--accent);letter-spacing:2px;margin-bottom:6px}
+.policy-metrics{display:flex;flex-direction:column;gap:10px}
+
+.eigen-panel{display:flex;flex-direction:column;gap:12px}
+.eigen-steps{display:flex;gap:8px;flex-wrap:wrap}
+.eigen-step{display:flex;align-items:center;gap:6px;font-size:.78rem;padding:5px 10px;border:1px solid var(--text);border-radius:20px;opacity:.45;transition:.3s}
+.eigen-step.active{opacity:1;border-color:var(--accent);color:var(--accent)}
+.eigen-step.done{opacity:1;border-color:var(--cyan);color:var(--cyan)}
+.eigen-step.done .eigen-dot{background:var(--cyan)}
+.eigen-dot{width:8px;height:8px;border-radius:50%;background:rgba(44,62,80,.25);transition:.3s}
+.eigen-terminal{background:#1a252f;color:#2ecc71;border-radius:8px;padding:14px 16px;font-family:monospace;font-size:.82rem;line-height:1.8;min-height:120px;white-space:pre-wrap;border:1px solid #2ecc71}
+
+.scale-interactive{display:flex;flex-direction:column;align-items:center}
+.scale-visual{position:relative;width:280px;height:170px;margin:0 auto 4px}
+.scale-beam{position:absolute;top:40px;left:8%;width:84%;height:4px;background:var(--text);transform-origin:center;transition:transform .18s ease}
+.scale-pan{position:absolute;top:36px;width:74px;height:42px;border:2px solid var(--text);border-radius:0 0 44px 44px;display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:bold;background:rgba(244,235,217,.9);transition:top .18s ease}
+.scale-pan.left{left:1%}
+.scale-pan.right{right:1%}
+
+#audioDock{position:fixed;right:16px;bottom:18px;z-index:1001;display:flex;gap:8px;align-items:center;background:rgba(244,235,217,.92);border:1px solid var(--text);padding:6px 10px;border-radius:24px;box-shadow:3px 3px 0 var(--text)}
+.audio-btn{background:none;border:1px solid var(--text);border-radius:16px;padding:4px 10px;font-family:inherit;font-size:.78rem;cursor:pointer;transition:.2s;color:var(--text)}
+.audio-btn:hover,.audio-btn.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.audio-hint{font-size:.66rem;opacity:.5;white-space:nowrap}
+
+/* 自制短片播放器 */
+.film-stage{
+  width:100%;max-width:860px;aspect-ratio:16/9;
+  border:2px solid var(--text);border-radius:10px;
+  box-shadow:7px 7px 0 var(--text);overflow:hidden;
+  background:#0a0e14;position:relative;
+}
+.film-stage canvas{display:block;width:100%;height:100%}
+.film-hud{
+  position:absolute;left:0;right:0;bottom:0;
+  display:flex;align-items:center;gap:10px;
+  padding:8px 12px;
+  background:linear-gradient(180deg,transparent,rgba(0,0,0,.72));
+  opacity:0;transition:opacity .25s;
+}
+.film-stage:hover .film-hud,.film-hud.playing{opacity:1}
+.film-btn{
+  background:rgba(244,235,217,.15);border:1px solid rgba(244,235,217,.5);
+  color:#f4ebd9;border-radius:4px;width:28px;height:22px;
+  font-family:inherit;font-size:.7rem;cursor:pointer;line-height:1;
+  transition:.2s;
+}
+.film-btn:hover{background:rgba(230,126,34,.5)}
+.film-progress{
+  flex:1;height:4px;background:rgba(244,235,217,.25);
+  border-radius:2px;cursor:pointer;position:relative;
+}
+.film-fill{
+  position:absolute;top:0;left:0;height:100%;width:0;
+  background:var(--accent);border-radius:2px;
+  transition:width .08s linear;
+}
+.film-time{
+  font-family:inherit;font-size:.62rem;color:rgba(244,235,217,.85);
+  white-space:nowrap;
+}
+.film-title-tag{
+  position:absolute;top:10px;left:12px;z-index:2;
+  font-size:.65rem;color:rgba(244,235,217,.6);
+  letter-spacing:1px;
+}
+
+/* 训练流程 */
+.train-pipeline{
+  display:flex; flex-direction:column; gap:12px;
+  width:100%; max-width:760px; margin-top:8px;
+}
+.train-stage{
+  background:rgba(244,235,217,.9); border:2px solid var(--text);
+  border-radius:10px; padding:14px 18px; box-shadow:4px 4px 0 var(--text);
+  cursor:pointer; transition:transform .2s;
+}
+.train-stage:hover{ transform:translateX(4px); }
+.train-stage-head{ display:flex; align-items:center; gap:10px; margin-bottom:6px; }
+.train-stage-num{
+  font-size:.72rem; font-weight:bold; color:#fff; background:var(--text);
+  padding:2px 8px; border-radius:10px;
+}
+.train-stage h3{ font-size:clamp(.95rem,1.3vw,1.2rem); margin:0; }
+.train-pct{ font-size:.7rem; color:var(--accent); font-weight:normal; margin-left:6px; }
+.train-bar{ height:5px; background:rgba(44,62,80,.1); border-radius:3px; overflow:hidden; margin-bottom:6px; }
+.train-bar-fill{ height:100%; width:var(--w); border-radius:3px; background:linear-gradient(90deg,var(--accent),var(--cyan)); }
+.train-desc{ font-size:clamp(.78rem,1vw,.9rem); line-height:1.6; opacity:.75; }
+.train-detail{
+  max-height:0; overflow:hidden; transition:max-height .3s ease;
+  font-size:.8rem; line-height:1.6; opacity:0;
+}
+.train-stage:hover .train-detail{ max-height:80px; opacity:.65; margin-top:6px; }
+
+/* 集群面板 */
+.cluster-panel{
+  background:rgba(244,235,217,.9); border:2px solid var(--text);
+  border-radius:10px; padding:16px 18px; box-shadow:5px 5px 0 var(--text);
+}
+.cluster-metric{
+  display:flex; align-items:baseline; gap:10px;
+  padding:6px 0; border-bottom:1px dashed rgba(44,62,80,.15);
+}
+.cluster-metric:last-child{ border-bottom:none; }
+.cluster-num{
+  font-size:clamp(1rem,1.4vw,1.25rem); font-weight:900; color:var(--red);
+  white-space:nowrap; min-width:100px;
+}
+.cluster-label{ font-size:clamp(.72rem,.9vw,.82rem); opacity:.7; line-height:1.5; }
+.spec-row{
+  display:flex; justify-content:space-between; gap:10px;
+  padding:5px 0; border-bottom:1px solid rgba(44,62,80,.08);
+  font-size:clamp(.75rem,.95vw,.88rem);
+}
+.spec-row:last-child{ border-bottom:none; }
+.spec-row span{ opacity:.65; }
+.spec-row strong{ color:var(--text); text-align:right; }
+</style>
+</head>
+<body>
+<div id="progress-bar"></div>
+<div id="cursor"></div>
+
+<div id="ppt-container">
+  <div class="bg-shape shape-circle"></div>
+  <div class="bg-shape shape-tri"></div>
+  <div class="bg-shape shape-rect"></div>
+
+  <!-- 0 封面 -->
+  <div class="slide active">
+    <span class="year-badge">1840 — 2026</span>
+    <h1 class="big-title reveal">一切信息皆为比特</h1>
+    <div class="typing reveal" style="text-align:center;border:none;font-size:clamp(1.1rem,1.6vw,1.6rem);">AI 进化史 · 训练 · 算力 · 自制短片</div>
+    <div class="note reveal">点击右侧 / → 前进 · 点击左侧 / ← 后退 · 短片可播放暂停拖动</div>
+  </div>
+
+  <!-- 1 打孔卡片 -->
+  <div class="slide">
+    <span class="year-badge">1804 · 法国里昂</span>
+    <div class="flex-center">
+      <div class="reveal" style="width:210px;height:300px;border:2px solid var(--text);position:relative;overflow:hidden;border-radius:10px;flex-shrink:0;">
+        <div style="position:absolute;inset:0;left:8px;background:repeating-linear-gradient(90deg,transparent,transparent 10px,var(--cyan) 10px,var(--cyan) 12px);animation:weave 2s linear infinite;"></div>
+        <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(244,235,217,.85) 0%,transparent 18%,transparent 82%,rgba(244,235,217,.85) 100%);"></div>
+      </div>
+      <div style="max-width:480px;" class="reveal">
+        <h2 style="color:var(--accent);font-size:clamp(1.3rem,2vw,2rem);margin-bottom:14px;">打孔卡片的启示</h2>
+        <div class="typing">“卡片上的每一个孔，都是预先写好的指令。Jacquard 织机用物理孔洞编织图案——人类第一次用二进制赋予机器‘记忆’与‘逻辑’。”</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2 香农 -->
+  <div class="slide">
+    <span class="year-badge">1948 · 贝尔实验室</span>
+    <div style="max-width:820px;z-index:2;">
+      <h1 class="big-title reveal" style="font-size:clamp(1.8rem,3vw,3rem);text-align:left;">克劳德·香农<br><span style="font-size:.55em;color:var(--cyan);">信息论之父</span></h1>
+      <div class="typing reveal">“他证明，文字、图像、声音，一切信息都可以被转化为 0 和 1。这根光标的每一次闪烁，都是比特的跳动。”</div>
+    </div>
+    <div class="reveal" style="position:absolute;right:8%;top:18%;font-size:clamp(.8rem,1.2vw,1.1rem);color:var(--cyan);opacity:.65;line-height:2;text-align:right;">
+      01000011 = C<br>01001100 = L<br>01000001 = A<br>01010101 = U<br>01000100 = D<br>01000101 = E
+    </div>
+  </div>
+
+  <!-- 3 图灵测试 -->
+  <div class="slide">
+    <span class="year-badge">1950 · 图灵测试 · 交互</span>
+    <h2 class="big-title reveal" style="font-size:clamp(1.4rem,2.4vw,2.4rem);">你能分辨谁在说话吗？</h2>
+    <div class="turing-box reveal">
+      <div id="turing-log" class="turing-log"></div>
+      <div id="turing-actions" class="turing-actions">
+        <button class="btn-cyber" onclick="startTuring()">开始对话</button>
+      </div>
+      <p id="turing-score" class="note" style="margin-top:10px;"></p>
+    </div>
+    <p class="note reveal">每轮随机由“人类”或“AI”回应。三局两胜后，你将看到自己的判断准确率。</p>
+  </div>
+
+  <!-- 4 比特的诞生短片 -->
+  <div class="slide">
+    <span class="year-badge">自制短片 · 00:14</span>
+    <h2 class="big-title reveal" style="font-size:clamp(1.3rem,2.2vw,2.2rem);margin-bottom:10px;">比特的诞生</h2>
+    <div class="film-stage reveal">
+      <span class="film-title-tag">THE BIRTH OF A BIT</span>
+      <canvas id="film-bits"></canvas>
+      <div class="film-hud">
+        <button class="film-btn" data-action="toggle">▶</button>
+        <div class="film-progress"><div class="film-fill"></div></div>
+        <span class="film-time">00:00 / 00:14</span>
+      </div>
+    </div>
+    <p class="note reveal">从打孔卡片的物理孔洞，到香农笔下的抽象比特——一切信息最终被还原为 0 和 1 的流动。</p>
+  </div>
+
+  <!-- 5 中国政策时间滑块 -->
+  <div class="slide">
+    <span class="year-badge cyan">中国 · 人工智能+</span>
+    <h2 class="big-title reveal" style="font-size:clamp(1.4rem,2.4vw,2.4rem);">拖动时间轴，看政策与产业同步生长</h2>
+    <div class="policy-slider-wrap reveal">
+      <input type="range" id="policyYear" min="2025" max="2034" value="2025" step="1" class="cyber-range">
+      <div class="policy-year-display"><span id="policyYearLabel">2025</span></div>
+      <div class="policy-metrics">
+        <div class="data-bar-wrap">
+          <div class="data-bar-label"><span>AI 产业规模</span><span id="metricScale">1.2 万亿元</span></div>
+          <div class="data-bar-track"><div class="data-bar-fill" id="barScale" style="--w:12%"></div></div>
+        </div>
+        <div class="data-bar-wrap">
+          <div class="data-bar-label"><span>AI 企业数量</span><span id="metricFirms">6,600+ 家</span></div>
+          <div class="data-bar-track"><div class="data-bar-fill" id="barFirms" style="--w:33%"></div></div>
+        </div>
+        <div class="data-bar-wrap">
+          <div class="data-bar-label"><span>智能算力</span><span id="metricCompute">2,592 EFLOPS</span></div>
+          <div class="data-bar-track"><div class="data-bar-fill" id="barCompute" style="--w:13%"></div></div>
+        </div>
+      </div>
+    </div>
+    <p class="note reveal">数据依据工信部及“十五五”规划公开口径示意。拖动滑块即切换年份。</p>
+  </div>
+
+  <!-- 6 十年跃迁短片 -->
+  <div class="slide">
+    <span class="year-badge cyan">自制短片 · 00:12</span>
+    <h2 class="big-title reveal" style="font-size:clamp(1.3rem,2.2vw,2.2rem);margin-bottom:10px;">十年跃迁</h2>
+    <div class="film-stage reveal">
+      <span class="film-title-tag">CHINA AI: A DECADE IN DATA</span>
+      <canvas id="film-data"></canvas>
+      <div class="film-hud">
+        <button class="film-btn" data-action="toggle">▶</button>
+        <div class="film-progress"><div class="film-fill"></div></div>
+        <span class="film-time">00:00 / 00:12</span>
+      </div>
+    </div>
+    <p class="note reveal">从 1.2 万亿到 10 万亿——产业规模、企业数量与智能算力三条曲线同步抬升。</p>
+  </div>
+
+  <!-- 7 制造主战场 -->
+  <div class="slide">
+    <span class="year-badge cyan">中国 · 制造主战场</span>
+    <h2 class="big-title reveal" style="font-size:clamp(1.5rem,2.5vw,2.5rem);">“人工智能+制造”赋能新型工业化</h2>
+    <div class="grid-3 reveal" style="margin-top:12px;">
+      <div class="flip-card"><div class="flip-card-inner">
+        <div class="flip-card-front" style="border-color:var(--cyan);box-shadow:5px 5px 0 var(--cyan);">
+          <h3 style="color:var(--cyan);">600 亿元</h3><p style="margin-top:8px;font-weight:bold;">国家 AI 产业投资基金</p>
+        </div>
+        <div class="flip-card-back" style="background:var(--cyan);">设立 600 亿元国家人工智能产业投资基金，带动社会资本投入，聚焦制造业高价值场景。</div>
+      </div></div>
+      <div class="flip-card"><div class="flip-card-inner">
+        <div class="flip-card-front" style="border-color:var(--accent);box-shadow:5px 5px 0 var(--accent);">
+          <h3 style="color:var(--accent);">20 领域 · 1000+ 场景</h3><p style="margin-top:8px;font-weight:bold;">高价值场景导航图</p>
+        </div>
+        <div class="flip-card-back" style="background:var(--accent);">覆盖石化、钢铁、汽车、消费电子等 20 个细分领域、1000 余个来自生产一线的“人工智能+”场景。</div>
+      </div></div>
+      <div class="flip-card"><div class="flip-card-inner">
+        <div class="flip-card-front" style="border-color:var(--red);box-shadow:5px 5px 0 var(--red);">
+          <h3 style="color:var(--red);">万台级</h3><p style="margin-top:8px;font-weight:bold;">人形机器人实景实训</p>
+        </div>
+        <div class="flip-card-back" style="background:var(--red);">2026 年被视为人形机器人量产元年，工信部与国资委启动实景实训专项行动，目标年底形成万台级工业场景落地能力。</div>
+      </div></div>
+    </div>
+    <p class="note reveal" style="margin-top:14px;">中国以完整工业体系为 AI 落地的独特优势，制造业是“人工智能+”的主战场。</p>
+  </div>
+
+  <!-- 8 Eigen 交互面板 -->
+  <div class="slide">
+    <span class="year-badge" style="background:var(--deep);">西门子 · Eigen 工程智能体</span>
+    <h2 class="big-title reveal" style="font-size:clamp(1.3rem,2.2vw,2.2rem);">点击按钮，看智能体如何“干活”</h2>
+    <div class="eigen-panel reveal">
+      <div class="eigen-steps">
+        <div class="eigen-step" data-step="0"><span class="eigen-dot"></span>硬件组态</div>
+        <div class="eigen-step" data-step="1"><span class="eigen-dot"></span>PLC 逻辑编程</div>
+        <div class="eigen-step" data-step="2"><span class="eigen-dot"></span>HMI 画面生成</div>
+        <div class="eigen-step" data-step="3"><span class="eigen-dot"></span>驱动配置</div>
+        <div class="eigen-step" data-step="4"><span class="eigen-dot"></span>文档撰写与验证</div>
+      </div>
+      <div class="eigen-terminal"><div id="eigenOutput">&gt; 等待指令...</div></div>
+      <button class="btn-cyber" onclick="runEigen()" id="eigenBtn">▶ 生成 PLC 程序</button>
+    </div>
+    <p class="note reveal">模拟 Eigen 在博途环境中的任务分解与执行流程。真实产品已在 19 国逾百家企业部署，执行速度提升 2—5 倍。</p>
+  </div>
+
+  <!-- 9 工厂里的智能体短片 -->
+  <div class="slide">
+    <span class="year-badge" style="background:var(--deep);">自制短片 · 00:12</span>
+    <h2 class="big-title reveal" style="font-size:clamp(1.3rem,2.2vw,2.2rem);margin-bottom:10px;">工厂里的智能体</h2>
+    <div class="film-stage reveal">
+      <span class="film-title-tag">EIGEN · ON THE FACTORY FLOOR</span>
+      <canvas id="film-factory"></canvas>
+      <div class="film-hud">
+        <button class="film-btn" data-action="toggle">▶</button>
+        <div class="film-progress"><div class="film-fill"></div></div>
+        <span class="film-time">00:00 / 00:12</span>
+      </div>
+    </div>
+    <p class="note reveal">传送带不停，机械臂起落。屏幕左侧的 HUD 记录着 Eigen 正在完成的五道工序。</p>
+  </div>
+
+  <!-- 10 TIA Portal 短片 -->
+  <div class="slide">
+    <span class="year-badge" style="background:var(--deep);">自制短片 · 00:14</span>
+    <h2 class="big-title reveal" style="font-size:clamp(1.3rem,2.2vw,2.2rem);margin-bottom:10px;">TIA Portal 中的 Eigen</h2>
+    <div class="film-stage reveal">
+      <span class="film-title-tag">EIGEN INSIDE TIA PORTAL</span>
+      <canvas id="film-tia"></canvas>
+      <div class="film-hud">
+        <button class="film-btn" data-action="toggle">▶</button>
+        <div class="film-progress"><div class="film-fill"></div></div>
+        <span class="film-time">00:00 / 00:14</span>
+      </div>
+    </div>
+    <p class="note reveal">模拟博途界面中的真实工程流程：项目树逐项完成、OB1 代码逐行生成、编译通过、效率与质量指标浮现。</p>
+  </div>
+
+  <!-- 11 训练流程（新增） -->
+  <div class="slide">
+    <span class="year-badge dark">训练 · Training Pipeline</span>
+    <h2 class="big-title reveal" style="font-size:clamp(1.3rem,2.2vw,2.2rem);">一个模型，三个阶段</h2>
+    <div class="train-pipeline reveal">
+      <div class="train-stage" data-stage="pretrain">
+        <div class="train-stage-head">
+          <span class="train-stage-num">01</span>
+          <h3>预训练 <span class="train-pct">90–99% 算力</span></h3>
+        </div>
+        <div class="train-bar"><div class="train-bar-fill" style="--w:95%"></div></div>
+        <p class="train-desc">数万亿 token，数千至上万 GPU 连续数月满载。自监督学习，下一个词预测，建立通用语言能力与世界知识基础。</p>
+        <div class="train-detail">
+          <p>GPT-3：6,000 块 A100，34 天。LLaMA-3：16,384 块 H100，54 天，15 万亿 token。</p>
+        </div>
+      </div>
+      <div class="train-stage" data-stage="sft">
+        <div class="train-stage-head">
+          <span class="train-stage-num">02</span>
+          <h3>监督微调 SFT <span class="train-pct">1–10% 算力</span></h3>
+        </div>
+        <div class="train-bar"><div class="train-bar-fill" style="--w:5%"></div></div>
+        <p class="train-desc">高质量指令—回答对，教模型“听懂话”。仅需少量梯度更新，周期缩短至数日或一周。</p>
+        <div class="train-detail">
+          <p>从“会接话”到“会办事”：让模型遵循指令、适配对话格式、掌握特定任务模式。</p>
+        </div>
+      </div>
+      <div class="train-stage" data-stage="rl">
+        <div class="train-stage-head">
+          <span class="train-stage-num">03</span>
+          <h3>强化学习对齐 <span class="train-pct">价值对齐</span></h3>
+        </div>
+        <div class="train-bar"><div class="train-bar-fill" style="--w:3%"></div></div>
+        <p class="train-desc">奖励建模 + RLHF / RLAIF。用人类偏好信号优化输出，让模型“说人话、做对事”。</p>
+        <div class="train-detail">
+          <p>DeepSeek-R1 引入推理导向强化学习：冷启动 → 多阶段 RL → 推理能力跃升，数学与代码任务可比 o1。</p>
+        </div>
+      </div>
+    </div>
+    <p class="note reveal">悬停任意阶段，查看该阶段的算力占比与代表性事实。</p>
+  </div>
+
+  <!-- 12 十万卡集群与 B300（新增） -->
+  <div class="slide">
+    <span class="year-badge dark">算力基座 · Compute at Scale</span>
+    <h2 class="big-title reveal" style="font-size:clamp(1.3rem,2.2vw,2.2rem);">十万张卡，训练一个模型</h2>
+    <div class="grid-2 reveal" style="margin-top:6px;">
+      <div class="cluster-panel">
+        <h3 style="color:var(--accent);margin-bottom:12px;">十万卡集群 · 物理规模</h3>
+        <div class="cluster-metric">
+          <span class="cluster-num">150 MW</span>
+          <span class="cluster-label">十万卡 H100 集群关键 IT 设备电力</span>
+        </div>
+        <div class="cluster-metric">
+          <span class="cluster-num">&gt; 40 亿美元</span>
+          <span class="cluster-label">仅服务器成本，不含网络、存储、基建</span>
+        </div>
+        <div class="cluster-metric">
+          <span class="cluster-num">每 3 小时一次</span>
+          <span class="cluster-label">Meta LLaMA-3 1.6 万卡集群平均故障间隔</span>
+        </div>
+        <div class="cluster-metric">
+          <span class="cluster-num">800 Gb/s</span>
+          <span class="cluster-label">DGX B300 集群网络端口速率（InfiniBand / 以太网）</span>
+        </div>
+      </div>
+      <div class="cluster-panel">
+        <h3 style="color:var(--cyan);margin-bottom:12px;">NVIDIA B300 · 单卡与系统</h3>
+        <div class="spec-row"><span>FP4 算力</span><strong>15 PFLOPS（单卡）</strong></div>
+        <div class="spec-row"><span>HBM3e 显存</span><strong>288 GB / 卡 · 8 TB/s</strong></div>
+        <div class="spec-row"><span>TDP</span><strong>1,400 W / 卡</strong></div>
+        <div class="spec-row"><span>DGX B300 系统</span><strong>8 卡 · 2.3 TB 显存 · 72 PFLOPS FP8 训练</strong></div>
+        <div class="spec-row"><span>GB300 NVL72 机架</span><strong>72 卡 · 1.1 EXAFLOPS FP4</strong></div>
+        <div class="spec-row"><span>散热</span><strong>液冷 · 单机架 132–140 kW</strong></div>
+      </div>
+    </div>
+    <p class="note reveal" style="margin-top:10px;">从 H100 的 700 W 到 B300 的 1,400 W，三代 GPU 功耗翻倍，而每兆瓦的 AI 吞吐量提升了数倍——规模与效率必须同时解决。</p>
+  </div>
+
+  <!-- 13 并行训练短片（新增） -->
+  <div class="slide">
+    <span class="year-badge dark">自制短片 · 00:14</span>
+    <h2 class="big-title reveal" style="font-size:clamp(1.3rem,2.2vw,2.2rem);margin-bottom:10px;">一万张卡如何同时训练一个模型</h2>
+    <div class="film-stage reveal">
+      <span class="film-title-tag">PARALLELISM · DATA · PIPELINE · TENSOR</span>
+      <canvas id="film-parallel"></canvas>
+      <div class="film-hud">
+        <button class="film-btn" data-action="toggle">▶</button>
+        <div class="film-progress"><div class="film-fill"></div></div>
+        <span class="film-time">00:00 / 00:14</span>
+      </div>
+    </div>
+    <p class="note reveal">数据并行同步梯度，流水线并行按层切分，张量并行在单层内拆分——三者叠加，集群才成为一台计算机。</p>
+  </div>
+
+  <!-- 14 监管天平 -->
+  <div class="slide">
+    <span class="year-badge dark">美国 · 监管张力</span>
+    <h2 class="big-title reveal" style="font-size:clamp(1.3rem,2.2vw,2.2rem);">拖动滑块，改变联邦与州的权重</h2>
+    <div class="scale-interactive reveal">
+      <div class="scale-visual">
+        <div class="scale-beam" id="scaleBeam"></div>
+        <div class="scale-pan left">联邦</div>
+        <div class="scale-pan right">州</div>
+      </div>
+      <input type="range" id="fedWeight" min="0" max="100" value="50" class="cyber-range" style="max-width:420px;">
+      <p id="scaleVerdict" class="note" style="margin-top:6px;">当前：联邦与州势均力敌</p>
+    </div>
+    <p class="note reveal">白宫 2026 年《国家人工智能立法框架》试图以联邦标准抢占各州 AI 法律，而科罗拉多、加州、得州等地已有各自的算法问责法规。</p>
+  </div>
+
+  <!-- 15 监管短片 -->
+  <div class="slide">
+    <span class="year-badge dark">自制短片 · 00:12</span>
+    <h2 class="big-title reveal" style="font-size:clamp(1.3rem,2.2vw,2.2rem);margin-bottom:10px;">监管的天平</h2>
+    <div class="film-stage reveal">
+      <span class="film-title-tag">THE REGULATORY BALANCE</span>
+      <canvas id="film-scale"></canvas>
+      <div class="film-hud">
+        <button class="film-btn" data-action="toggle">▶</button>
+        <div class="film-progress"><div class="film-fill"></div></div>
+        <span class="film-time">00:00 / 00:12</span>
+      </div>
+    </div>
+    <p class="note reveal">联邦统一标准与州级监管在横梁两端往复摆动。字幕依次浮现关键立法节点。</p>
+  </div>
+
+  <!-- 16 监管卡片 -->
+  <div class="slide">
+    <span class="year-badge dark">美国 · 2026 · 监管信号</span>
+    <div class="grid-2 reveal" style="margin-top:8px;">
+      <div class="flip-card" style="min-height:210px;"><div class="flip-card-inner" style="min-height:210px;">
+        <div class="flip-card-front" style="border-color:var(--red);box-shadow:5px 5px 0 var(--red);">
+          <h3 style="color:var(--red);font-size:1.15rem;">“超级智能”行政令</h3>
+          <p style="margin-top:8px;font-size:.82rem;opacity:.7;">2026 年 9 月 29 日</p>
+        </div>
+        <div class="flip-card-back" style="background:var(--red);">特朗普签署《开启超级智能时代》行政令，要求联邦部门以“超级智能”（SI）替代“人工智能”表述，认为前沿系统能力已远超 AI 一词的原初含义。</div>
+      </div></div>
+      <div class="flip-card" style="min-height:210px;"><div class="flip-card-inner" style="min-height:210px;">
+        <div class="flip-card-front" style="border-color:var(--cyan);box-shadow:5px 5px 0 var(--cyan);">
+          <h3 style="color:var(--cyan);font-size:1.15rem;">AI 系统透明度法案</h3>
+          <p style="margin-top:8px;font-size:.82rem;opacity:.7;">2026 年 9 月 · 两党提案</p>
+        </div>
+        <div class="flip-card-back" style="background:var(--cyan);">ASTA 要求 AI 公司披露训练数据收集、儿童保护措施与失控防护机制，由 FTC 强制执行，覆盖闭源与开源模型。</div>
+      </div></div>
+    </div>
+    <p class="note reveal" style="margin-top:16px;">同一天，黄仁勋、奥特曼、阿莫代伊、皮查伊、扎克伯格、马斯克等出席白宫午餐会并签署自愿性《超级智能协议》，承诺建立内部管控与外部审查机制——但不具有法律约束力。</p>
+  </div>
+
+  <!-- 17 从图灵到生成式 AI 短片 -->
+  <div class="slide">
+    <span class="year-badge">自制短片 · 00:16</span>
+    <h2 class="big-title reveal" style="font-size:clamp(1.3rem,2.2vw,2.2rem);margin-bottom:10px;">从图灵到生成式 AI</h2>
+    <div class="film-stage reveal">
+      <span class="film-title-tag">FROM TURING TO GENERATIVE AI</span>
+      <canvas id="film-timeline"></canvas>
+      <div class="film-hud">
+        <button class="film-btn" data-action="toggle">▶</button>
+        <div class="film-progress"><div class="film-fill"></div></div>
+        <span class="film-time">00:00 / 00:16</span>
+      </div>
+    </div>
+    <p class="note reveal">时间轴从 1950 延伸到 2024：图灵测试、达特茅斯、反向传播、深蓝、AlexNet、AlphaGo、Transformer、GPT-3、ChatGPT、多模态。</p>
+  </div>
+
+  <!-- 18 中国 AI 落地场景短片 -->
+  <div class="slide">
+    <span class="year-badge cyan">自制短片 · 00:14</span>
+    <h2 class="big-title reveal" style="font-size:clamp(1.3rem,2.2vw,2.2rem);margin-bottom:10px;">中国 AI · 落地场景</h2>
+    <div class="film-stage reveal">
+      <span class="film-title-tag">CHINA AI · SCENES IN ACTION</span>
+      <canvas id="film-china"></canvas>
+      <div class="film-hud">
+        <button class="film-btn" data-action="toggle">▶</button>
+        <div class="film-progress"><div class="film-fill"></div></div>
+        <span class="film-time">00:00 / 00:14</span>
+      </div>
+    </div>
+    <p class="note reveal">六张场景卡片依次点亮：智能制造、城市大脑、移动支付、自动驾驶、医疗影像、智慧教育。</p>
+  </div>
+
+  <!-- 19 Llama 代码雨 -->
+  <div class="slide" data-matrix="true">
+    <div class="matrix-bg"></div>
+    <div style="z-index:10;text-align:center;">
+      <h1 class="big-title reveal" style="color:#2ecc71;text-shadow:0 0 10px #2ecc71;">Meta Llama</h1>
+      <div class="typing reveal" style="color:#fff;border-color:#2ecc71;">“开源是我的代名词。把力量交还给开发者，让每一个极客都能在自己的设备上构建赛博空间。”</div>
+    </div>
+  </div>
+
+  <!-- 20 终章 -->
+  <div class="slide" style="background:#000;color:#0F0;font-family:monospace;">
+    <div style="font-size:clamp(1rem,1.6vw,1.6rem);line-height:2.2;text-align:center;" class="reveal">
+      <p style="color:#fff;">&gt; SHANNON.EXE initialized.</p>
+      <p>&gt; “一切信息，都能化为比特。”</p>
+      <p style="margin-top:18px;color:var(--cyan);">-- Claude Shannon, 1948</p>
+    </div>
+    <div class="note reveal" style="margin-top:40px;color:#888;">由人类与 AI 共同创造 · 感谢观看</div>
+  </div>
+
+</div>
+
+<div id="controls"></div>
+
+<div id="audioDock">
+  <button class="audio-btn" id="bgmToggle" onclick="toggleBGM()">♪ BGM</button>
+  <button class="audio-btn" onclick="toggleNarration()">🗣 旁白</button>
+  <span class="audio-hint">Pixabay 免版税</span>
+</div>
+
+<script>
+/* ============================================================
+   通用工具
+   ============================================================ */
+function formatTime(s){
+  s = Math.max(0, Math.floor(s));
+  return String(Math.floor(s/60)).padStart(2,'0') + ':' + String(s%60).padStart(2,'0');
+}
+function hash01(i, j){
+  let n = (i * 73856093) ^ (j * 19349663);
+  return ((n % 1000) + 1000) % 1000 / 1000;
+}
+function bitAt(x, t){
+  const seed = Math.floor((x + t * 90) / 16);
+  const n = (seed * 2654435761) >>> 0;
+  return ((n >> 7) % 2) ? '1' : '0';
+}
+function roundRect(ctx, x, y, w, h, r){
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+}
+
+/* ============================================================
+   短片绘制函数
+   ============================================================ */
+
+/* 短片一：比特的诞生 */
+function drawBits(ctx, W, H, t, D){
+  ctx.fillStyle = '#0a0e14';
+  ctx.fillRect(0, 0, W, H);
+  const cols = 20, rows = 10;
+  const padX = W * 0.08, padY = H * 0.10;
+  const cardW = W - padX * 2, cardH = H - padY * 2;
+  const cw = cardW / cols, ch = cardH / rows;
+  const p1 = Math.min(1, t / 3);
+  const p3Base = Math.max(0, (t - 6) / 1.2);
+  const p4 = Math.max(0, Math.min(1, (t - 9) / 3));
+  ctx.save();
+  ctx.globalAlpha = p1;
+  ctx.strokeStyle = 'rgba(22,160,133,0.8)';
+  ctx.lineWidth = 2;
+  roundRect(ctx, padX, padY, cardW, cardH, 8);
+  ctx.stroke();
+  ctx.strokeStyle = 'rgba(22,160,133,0.12)';
+  ctx.lineWidth = 1;
+  for(let i = 0; i <= cols; i++){
+    ctx.beginPath(); ctx.moveTo(padX + i * cw, padY); ctx.lineTo(padX + i * cw, padY + cardH); ctx.stroke();
+  }
+  for(let j = 0; j <= rows; j++){
+    ctx.beginPath(); ctx.moveTo(padX, padY + j * ch); ctx.lineTo(padX + cardW, padY + j * ch); ctx.stroke();
+  }
+  ctx.restore();
+  for(let i = 0; i < cols; i++){
+    for(let j = 0; j < rows; j++){
+      const seed = hash01(i, j);
+      if(seed > 0.45) continue;
+      const t0 = seed * 2.2;
+      const appear = Math.max(0, Math.min(1, (t - 3 - t0) / 0.6));
+      if(appear <= 0) continue;
+      const x = padX + i * cw + cw / 2;
+      const y = padY + j * ch + ch / 2;
+      const r = Math.min(cw, ch) * 0.30;
+      const flip = Math.max(0, Math.min(1, p3Base - t0 * 0.15));
+      const globalFade = 1 - p4 * 0.85;
+      if(flip < 1){
+        ctx.beginPath();
+        ctx.arc(x, y, r * appear, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(230,126,34,' + ((0.35 + 0.6 * appear) * globalFade) + ')';
+        ctx.fill();
+      }
+      if(flip > 0){
+        ctx.font = Math.min(cw, ch) * 0.78 + 'px "Courier New", monospace';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = 'rgba(46,204,113,' + (0.35 + 0.65 * flip) * globalFade + ')';
+        ctx.fillText(seed > 0.5 ? '1' : '0', x, y);
+      }
+    }
+  }
+  if(p4 > 0){
+    const bandY = H * 0.84;
+    ctx.save();
+    ctx.globalAlpha = Math.min(1, p4 * 1.6) * 0.5;
+    ctx.font = Math.max(10, H * 0.040) + 'px "Courier New", monospace';
+    ctx.fillStyle = '#16a085';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    for(let x = -20; x < W + 20; x += 18){
+      ctx.fillText(bitAt(x, t), x, bandY);
+    }
+    ctx.restore();
+    const alpha = Math.max(0, Math.min(1, (p4 - 0.35) / 0.65));
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.font = 'bold ' + Math.min(W * 0.052, 40) + 'px "Courier New", monospace';
+    ctx.fillStyle = '#f4ebd9';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('一切信息皆为比特', W / 2, H * 0.30);
+    ctx.font = Math.min(W * 0.020, 15) + 'px "Courier New", monospace';
+    ctx.fillStyle = '#16a085';
+    ctx.fillText('— Claude Shannon, 1948', W / 2, H * 0.39);
+    ctx.restore();
+  }
+}
+
+/* 短片二：中国 AI 十年 */
+function drawData(ctx, W, H, t, D){
+  ctx.fillStyle = '#0a0e14';
+  ctx.fillRect(0, 0, W, H);
+  const padL = W * 0.10, padR = W * 0.08;
+  const padT = H * 0.24, padB = H * 0.16;
+  const chartW = W - padL - padR;
+  const chartH = H - padT - padB;
+  ctx.save();
+  ctx.globalAlpha = Math.min(1, t / 1);
+  ctx.font = 'bold ' + Math.min(W * 0.032, 24) + 'px "Courier New", monospace';
+  ctx.fillStyle = '#e67e22';
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'alphabetic';
+  ctx.fillText('中国人工智能产业：十年跃迁', padL, padT - 22);
+  ctx.restore();
+  const axesAlpha = Math.max(0, Math.min(1, (t - 0.4) / 1));
+  ctx.save();
+  ctx.globalAlpha = axesAlpha;
+  ctx.strokeStyle = 'rgba(244,235,217,0.35)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(padL, padT); ctx.lineTo(padL, padT + chartH);
+  ctx.lineTo(padL + chartW, padT + chartH);
+  ctx.stroke();
+  ctx.restore();
+  const vals = [0.12, 0.18, 0.27, 0.39, 0.53, 0.68, 0.80, 0.88, 0.94, 1.0];
+  const years = ['2025','2026','2027','2028','2029','2030','2031','2032','2033','2034'];
+  const labels = ['1.2','1.8','2.7','3.9','5.3','6.8','8.0','8.8','9.4','10.0'];
+  const gap = chartW / vals.length;
+  const barW = gap * 0.56;
+  const maxH = chartH - 18;
+  vals.forEach((v, i) => {
+    const start = 1.2 + i * 0.32;
+    const prog = Math.max(0, Math.min(1, (t - start) / 0.75));
+    if(prog <= 0) return;
+    const ease = 1 - Math.pow(1 - prog, 3);
+    const barH = v * maxH * ease;
+    const x = padL + gap * i + (gap - barW) / 2;
+    const y = padT + chartH - barH;
+    const grad = ctx.createLinearGradient(0, y, 0, padT + chartH);
+    grad.addColorStop(0, '#e67e22');
+    grad.addColorStop(1, '#16a085');
+    ctx.fillStyle = grad;
+    ctx.fillRect(x, y, barW, barH);
+    if(prog > 0.85){
+      ctx.save();
+      ctx.shadowColor = '#e67e22';
+      ctx.shadowBlur = 18;
+      ctx.fillStyle = 'rgba(230,126,34,0.9)';
+      ctx.fillRect(x, y, barW, 2);
+      ctx.restore();
+    }
+    if(prog > 0.4){
+      ctx.save();
+      ctx.globalAlpha = Math.min(1, (prog - 0.4) * 2.2);
+      ctx.font = Math.min(W * 0.016, 12) + 'px "Courier New", monospace';
+      ctx.fillStyle = '#f4ebd9';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'bottom';
+      ctx.fillText(labels[i] + ' 万亿', x + barW / 2, y - 6);
+      ctx.restore();
+    }
+    ctx.save();
+    ctx.globalAlpha = Math.min(1, prog * 1.6) * 0.65;
+    ctx.font = Math.min(W * 0.014, 11) + 'px "Courier New", monospace';
+    ctx.fillStyle = '#f4ebd9';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+    ctx.fillText(years[i], x + barW / 2, padT + chartH + 8);
+    ctx.restore();
+  });
+  const cp = Math.max(0, Math.min(1, (t - 0.8) / 8));
+  if(cp > 0){
+    const v = cp >= 1 ? '10.0' : (cp * 10).toFixed(1);
+    ctx.save();
+    ctx.globalAlpha = Math.min(1, cp * 2) * 0.18;
+    ctx.font = 'bold ' + Math.min(W * 0.075, 60) + 'px "Courier New", monospace';
+    ctx.fillStyle = '#e67e22';
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'top';
+    ctx.fillText(v + ' 万亿', W - padR, padT - 78);
+    ctx.restore();
+  }
+}
+
+/* 短片三：工厂里的智能体 */
+function drawFactory(ctx, W, H, t, D){
+  ctx.fillStyle = '#0a0e14';
+  ctx.fillRect(0, 0, W, H);
+  ctx.strokeStyle = 'rgba(22,160,133,0.07)';
+  ctx.lineWidth = 1;
+  for(let x = 0; x < W; x += 40){ ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); }
+  for(let y = 0; y < H; y += 40){ ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+  const floorY = H * 0.78;
+  const beltTop = floorY - H * 0.06;
+  const beltBot = floorY;
+  ctx.fillStyle = 'rgba(44,62,80,0.85)';
+  ctx.fillRect(0, beltTop, W, beltBot - beltTop);
+  ctx.strokeStyle = 'rgba(46,204,113,0.5)';
+  ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(0, beltTop); ctx.lineTo(W, beltTop); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(0, beltBot); ctx.lineTo(W, beltBot); ctx.stroke();
+  const scroll = (t * 70) % 28;
+  ctx.strokeStyle = 'rgba(46,204,113,0.25)';
+  ctx.lineWidth = 1;
+  for(let x = -28 + scroll; x < W + 28; x += 28){
+    ctx.beginPath(); ctx.moveTo(x, beltTop + 4); ctx.lineTo(x, beltBot - 4); ctx.stroke();
+  }
+  const boxW = Math.min(46, W * 0.055);
+  const boxH = boxW * 0.8;
+  for(let i = 0; i < 5; i++){
+    const spacing = W / 5;
+    const x = ((t * 70 + i * spacing) % (W + boxW * 2)) - boxW;
+    const y = beltTop - boxH;
+    ctx.fillStyle = '#2c3e50';
+    ctx.strokeStyle = '#e67e22';
+    ctx.lineWidth = 2;
+    ctx.fillRect(x, y, boxW, boxH);
+    ctx.strokeRect(x, y, boxW, boxH);
+    ctx.strokeStyle = 'rgba(230,126,34,0.4)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(x + 6, y + 6); ctx.lineTo(x + boxW - 6, y + boxH - 6);
+    ctx.moveTo(x + boxW - 6, y + 6); ctx.lineTo(x + 6, y + boxH - 6);
+    ctx.stroke();
+  }
+  const armX = W * 0.58;
+  const armBaseY = beltTop - 4;
+  const armLen = H * 0.26;
+  const swing = Math.sin(t * 1.8) * 0.14;
+  const angle = -Math.PI / 2 + swing;
+  ctx.save();
+  ctx.fillStyle = '#16a085';
+  ctx.beginPath();
+  ctx.arc(armX, armBaseY, 12, Math.PI, 0);
+  ctx.fill();
+  const ex = armX + Math.cos(angle) * armLen;
+  const ey = armBaseY + Math.sin(angle) * armLen;
+  ctx.strokeStyle = '#16a085';
+  ctx.lineWidth = 8;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(armX, armBaseY); ctx.lineTo(ex, ey);
+  ctx.stroke();
+  ctx.fillStyle = '#e67e22';
+  ctx.beginPath();
+  ctx.arc(ex, ey, 8, 0, Math.PI * 2);
+  ctx.fill();
+  if(t > 2){
+    ctx.strokeStyle = 'rgba(230,126,34,0.55)';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([4, 4]);
+    ctx.beginPath();
+    ctx.moveTo(ex, ey);
+    ctx.lineTo(ex + 46, ey + 22);
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
+  ctx.restore();
+  const hudX = W * 0.035, hudY = H * 0.055;
+  const hudW = W * 0.30, hudH = H * 0.40;
+  ctx.fillStyle = 'rgba(10,14,20,0.85)';
+  ctx.fillRect(hudX, hudY, hudW, hudH);
+  ctx.strokeStyle = '#16a085';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(hudX, hudY, hudW, hudH);
+  ctx.font = Math.min(W * 0.014, 12) + 'px "Courier New", monospace';
+  ctx.fillStyle = '#16a085';
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'top';
+  ctx.fillText('EIGEN · 任务监控', hudX + 10, hudY + 10);
+  const steps = ['硬件组态','PLC 编程','HMI 生成','驱动配置','验证'];
+  steps.forEach((s, i) => {
+    const sp = Math.max(0, Math.min(1, (t - 1.4 - i * 1.1) / 0.45));
+    if(sp <= 0) return;
+    const sy = hudY + 34 + i * Math.max(18, H * 0.05);
+    ctx.globalAlpha = sp;
+    ctx.fillStyle = sp >= 1 ? '#2ecc71' : 'rgba(244,235,217,0.45)';
+    ctx.font = Math.min(W * 0.014, 12) + 'px "Courier New", monospace';
+    ctx.fillText((sp >= 1 ? '✓ ' : '○ ') + s, hudX + 10, sy);
+    ctx.globalAlpha = 1;
+  });
+  const statusAlpha = Math.max(0, Math.min(1, (t - 7) / 1.2));
+  if(statusAlpha > 0){
+    ctx.save();
+    ctx.globalAlpha = statusAlpha;
+    ctx.fillStyle = '#2ecc71';
+    ctx.font = 'bold ' + Math.min(W * 0.020, 16) + 'px "Courier New", monospace';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('● 智能体执行中 · 效率提升 ≈ 50%', W / 2, H * 0.94);
+    ctx.restore();
+  }
+}
+
+/* 短片四：监管的天平 */
+function drawScale(ctx, W, H, t, D){
+  ctx.fillStyle = '#0a0e14';
+  ctx.fillRect(0, 0, W, H);
+  const cx = W / 2;
+  const cy = H * 0.36;
+  const beamLen = W * 0.40;
+  ctx.fillStyle = '#2c3e50';
+  ctx.beginPath();
+  ctx.moveTo(cx - 28, cy + 80);
+  ctx.lineTo(cx + 28, cy + 80);
+  ctx.lineTo(cx + 14, cy + 22);
+  ctx.lineTo(cx - 14, cy + 22);
+  ctx.closePath();
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(cx, cy + 22, 6, 0, Math.PI * 2);
+  ctx.fillStyle = '#e67e22';
+  ctx.fill();
+  const swing = Math.sin(t * 0.8) * 0.12 + Math.sin(t * 0.47) * 0.04;
+  const angle = swing * Math.PI;
+  ctx.save();
+  ctx.translate(cx, cy + 22);
+  ctx.rotate(angle);
+  ctx.strokeStyle = '#f4ebd9';
+  ctx.lineWidth = 4;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(-beamLen / 2, 0);
+  ctx.lineTo(beamLen / 2, 0);
+  ctx.stroke();
+  [-beamLen / 2, beamLen / 2].forEach((ex, i) => {
+    const label = i === 0 ? '联邦' : '州';
+    const color = i === 0 ? '#c0392b' : '#16a085';
+    ctx.strokeStyle = 'rgba(244,235,217,0.45)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(ex, 0);
+    ctx.lineTo(ex, 62);
+    ctx.stroke();
+    ctx.save();
+    ctx.translate(ex, 62);
+    ctx.rotate(-angle);
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(-40, 0);
+    ctx.lineTo(40, 0);
+    ctx.lineTo(30, 16);
+    ctx.lineTo(-30, 16);
+    ctx.closePath();
+    ctx.stroke();
+    ctx.font = 'bold ' + Math.min(W * 0.020, 18) + 'px "Courier New", monospace';
+    ctx.fillStyle = color;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(label, 0, 8);
+    ctx.restore();
+  });
+  ctx.restore();
+  ctx.save();
+  ctx.globalAlpha = Math.min(1, t / 1);
+  ctx.font = 'bold ' + Math.min(W * 0.028, 22) + 'px "Courier New", monospace';
+  ctx.fillStyle = '#f4ebd9';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'top';
+  ctx.fillText('联邦统一标准  vs  州级监管', cx, H * 0.07);
+  ctx.restore();
+  const phases = [
+    { start: 1.0, text: '《国家人工智能立法框架》试图统一联邦标准' },
+    { start: 3.6, text: '科罗拉多、加州、得州已有各自的算法问责法规' },
+    { start: 6.4, text: '2026 年 9 月：联邦以“超级智能”重新定义监管对象' },
+    { start: 9.2, text: '自愿协议 ≠ 法律约束' }
+  ];
+  phases.forEach(p => {
+    if(t >= p.start && t < p.start + 2.4){
+      const a = Math.min(1, (t - p.start) / 0.3) * Math.min(1, (p.start + 2.4 - t) / 0.3);
+      ctx.save();
+      ctx.globalAlpha = a;
+      ctx.font = Math.min(W * 0.018, 14) + 'px "Courier New", monospace';
+      ctx.fillStyle = '#e67e22';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(p.text, cx, H * 0.87);
+      ctx.restore();
+    }
+  });
+}
+
+/* 短片五：TIA Portal 中的 Eigen */
+function drawTia(ctx, W, H, t, D){
+  ctx.fillStyle = '#0a0e14';
+  ctx.fillRect(0, 0, W, H);
+  const frameA = Math.min(1, t / 1.2);
+  ctx.save();
+  ctx.globalAlpha = frameA;
+  ctx.fillStyle = '#161b22';
+  ctx.fillRect(0, 0, W, H * 0.09);
+  ctx.strokeStyle = 'rgba(22,160,133,0.4)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(0, H * 0.09);
+  ctx.lineTo(W, H * 0.09);
+  ctx.stroke();
+  ctx.font = 'bold ' + Math.min(W * 0.016, 13) + 'px "Courier New", monospace';
+  ctx.fillStyle = '#16a085';
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('TIA Portal · Eigen Engineering Agent', W * 0.02, H * 0.045);
+  ctx.textAlign = 'right';
+  ctx.fillStyle = 'rgba(244,235,217,0.5)';
+  ctx.fillText('Project: Line-07 · CPU 1516', W * 0.98, H * 0.045);
+  ctx.restore();
+  const treeW = W * 0.22;
+  ctx.save();
+  ctx.globalAlpha = frameA;
+  ctx.fillStyle = '#0d1117';
+  ctx.fillRect(0, H * 0.09, treeW, H * 0.71);
+  ctx.strokeStyle = 'rgba(46,204,113,0.15)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(treeW, H * 0.09);
+  ctx.lineTo(treeW, H * 0.8);
+  ctx.stroke();
+  const treeItems = [
+    { name: '设备组态', indent: 0, done: 1.5 },
+    { name: 'PLC 变量', indent: 0, done: 2.5 },
+    { name: '程序块 OB1', indent: 1, done: 3.5 },
+    { name: 'FB_Motor', indent: 1, done: 4.5 },
+    { name: 'HMI_画面', indent: 0, done: 6.0 },
+    { name: '驱动配置', indent: 0, done: 7.0 }
+  ];
+  treeItems.forEach((item, i) => {
+    const y = H * 0.14 + i * H * 0.075;
+    const done = Math.max(0, Math.min(1, (t - item.done) / 0.5));
+    ctx.fillStyle = done > 0 ? '#2ecc71' : 'rgba(244,235,217,0.35)';
+    ctx.font = Math.min(W * 0.013, 11) + 'px "Courier New", monospace';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(
+      (done > 0 ? '✓ ' : '▸ ') + item.name,
+      W * 0.02 + item.indent * W * 0.015,
+      y
+    );
+  });
+  ctx.restore();
+  const codeX = treeW + W * 0.02;
+  const codeY = H * 0.14;
+  const codeLines = [
+    'ORGANIZATION_BLOCK OB1',
+    '  VAR',
+    '    Start : Bool;',
+    '    Speed : Real;',
+    '  END_VAR',
+    '  IF "Start_Btn" THEN',
+    '    "Motor1" := TRUE;',
+    '    "Speed" := 1450;',
+    '  END_IF;',
+    'END_ORGANIZATION_BLOCK'
+  ];
+  ctx.save();
+  ctx.globalAlpha = Math.min(1, t / 1.5);
+  ctx.font = Math.min(W * 0.013, 11) + 'px "Courier New", monospace';
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'top';
+  codeLines.forEach((line, i) => {
+    const start = 1.8 + i * 0.55;
+    const appear = Math.max(0, Math.min(1, (t - start) / 0.35));
+    if (appear <= 0) return;
+    ctx.fillStyle = 'rgba(46,204,113,' + (0.5 + 0.5 * appear) + ')';
+    ctx.fillText(line, codeX, codeY + i * Math.max(15, H * 0.045));
+  });
+  ctx.restore();
+  if (t > 7.5) {
+    const cp = Math.max(0, Math.min(1, (t - 7.5) / 2));
+    const barY = H * 0.72;
+    const barW = W * 0.6;
+    const barX = (W - barW) / 2;
+    ctx.save();
+    ctx.fillStyle = 'rgba(244,235,217,0.1)';
+    ctx.fillRect(barX, barY, barW, 6);
+    ctx.fillStyle = '#e67e22';
+    ctx.fillRect(barX, barY, barW * cp, 6);
+    ctx.font = Math.min(W * 0.014, 12) + 'px "Courier New", monospace';
+    ctx.fillStyle = cp >= 1 ? '#2ecc71' : '#e67e22';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'bottom';
+    ctx.fillText(
+      cp >= 1 ? '✓ 编译通过 · 0 Errors' : '编译中 ' + Math.round(cp * 100) + '%',
+      W / 2, barY - 8
+    );
+    ctx.restore();
+  }
+  ctx.save();
+  ctx.globalAlpha = frameA;
+  ctx.fillStyle = '#161b22';
+  ctx.fillRect(0, H * 0.8, W, H * 0.2);
+  ctx.strokeStyle = 'rgba(46,204,113,0.2)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(0, H * 0.8);
+  ctx.lineTo(W, H * 0.8);
+  ctx.stroke();
+  const statuses = [
+    { time: 1.5, text: '> 硬件组态完成 · 设备树已建立', color: 'rgba(244,235,217,0.55)' },
+    { time: 3.5, text: '> 生成 OB1 逻辑块 · 14 个网络', color: 'rgba(244,235,217,0.55)' },
+    { time: 5.5, text: '> 关联 HMI 变量 · 32 个标签', color: 'rgba(244,235,217,0.55)' },
+    { time: 9.5, text: '> 编译验证完成 · 0 错误 0 警告', color: '#2ecc71' },
+    { time: 11, text: '> 工程效率提升 ≈ 50% · 方案质量提升 ≈ 80%', color: '#e67e22' }
+  ];
+  let lastVisible = null;
+  statuses.forEach(s => {
+    if (t >= s.time) lastVisible = s;
+  });
+  if (lastVisible) {
+    ctx.fillStyle = lastVisible.color;
+    ctx.font = Math.min(W * 0.014, 12) + 'px "Courier New", monospace';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(lastVisible.text, W * 0.02, H * 0.9);
+  }
+  ctx.restore();
+}
+
+/* 短片六：从图灵到生成式 AI */
+function drawTimeline(ctx, W, H, t, D){
+  ctx.fillStyle = '#0a0e14';
+  ctx.fillRect(0, 0, W, H);
+  const events = [
+    { year: '1950', label: '图灵测试', desc: '机器能思考吗？' },
+    { year: '1956', label: '达特茅斯', desc: '人工智能命名' },
+    { year: '1986', label: '反向传播', desc: '神经网络可训练' },
+    { year: '1997', label: '深蓝', desc: '击败国际象棋冠军' },
+    { year: '2012', label: 'AlexNet', desc: '深度学习爆发' },
+    { year: '2016', label: 'AlphaGo', desc: '击败围棋冠军' },
+    { year: '2017', label: 'Transformer', desc: '注意力机制' },
+    { year: '2020', label: 'GPT-3', desc: '1750 亿参数' },
+    { year: '2022', label: 'ChatGPT', desc: '对话式 AI 普及' },
+    { year: '2024', label: '多模态', desc: '图文音视频融合' }
+  ];
+  const padL = W * 0.06;
+  const padR = W * 0.06;
+  const axisY = H * 0.52;
+  const axisW = W - padL - padR;
+  ctx.save();
+  ctx.font = 'bold ' + Math.min(W * 0.026, 22) + 'px "Courier New", monospace';
+  ctx.fillStyle = '#f4ebd9';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'top';
+  ctx.fillText('从图灵到生成式 AI', W / 2, H * 0.08);
+  ctx.restore();
+  const progress = Math.min(1, (t - 0.5) / 12);
+  const axisEnd = padL + axisW * progress;
+  ctx.save();
+  ctx.strokeStyle = 'rgba(244,235,217,0.25)';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(padL, axisY);
+  ctx.lineTo(axisEnd, axisY);
+  ctx.stroke();
+  if (progress > 0.95) {
+    ctx.fillStyle = 'rgba(244,235,217,0.4)';
+    ctx.beginPath();
+    ctx.moveTo(padL + axisW, axisY);
+    ctx.lineTo(padL + axisW - 10, axisY - 6);
+    ctx.lineTo(padL + axisW - 10, axisY + 6);
+    ctx.closePath();
+    ctx.fill();
+  }
+  ctx.restore();
+  events.forEach((ev, i) => {
+    const x = padL + (i / (events.length - 1)) * axisW;
+    const appearT = 0.5 + (i / events.length) * 11;
+    const appear = Math.max(0, Math.min(1, (t - appearT) / 0.4));
+    if (appear <= 0) return;
+    const isTop = i % 2 === 0;
+    const labelY = isTop ? axisY - 44 : axisY + 44;
+    const connY = isTop ? axisY - 8 : axisY + 8;
+    ctx.save();
+    ctx.globalAlpha = appear;
+    ctx.beginPath();
+    ctx.arc(x, axisY, 6, 0, Math.PI * 2);
+    ctx.fillStyle = '#e67e22';
+    ctx.fill();
+    const pulseR = 6 + ((t * 2 + i * 0.3) % 1) * 14;
+    const pulseA = 1 - ((t * 2 + i * 0.3) % 1);
+    ctx.beginPath();
+    ctx.arc(x, axisY, pulseR, 0, Math.PI * 2);
+    ctx.strokeStyle = 'rgba(230,126,34,' + (pulseA * 0.4) + ')';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(x, axisY);
+    ctx.lineTo(x, connY);
+    ctx.strokeStyle = 'rgba(244,235,217,0.3)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.font = 'bold ' + Math.min(W * 0.014, 12) + 'px "Courier New", monospace';
+    ctx.fillStyle = '#e67e22';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = isTop ? 'bottom' : 'top';
+    ctx.fillText(ev.year, x, labelY);
+    ctx.font = Math.min(W * 0.012, 10) + 'px "Courier New", monospace';
+    ctx.fillStyle = '#f4ebd9';
+    ctx.fillText(ev.label, x, isTop ? labelY - 16 : labelY + 16);
+    ctx.font = Math.min(W * 0.010, 9) + 'px "Courier New", monospace';
+    ctx.fillStyle = 'rgba(244,235,217,0.5)';
+    ctx.fillText(ev.desc, x, isTop ? labelY - 30 : labelY + 30);
+    ctx.restore();
+  });
+  const endA = Math.max(0, Math.min(1, (t - 13) / 1));
+  if (endA > 0) {
+    ctx.save();
+    ctx.globalAlpha = endA;
+    ctx.font = 'bold ' + Math.min(W * 0.016, 14) + 'px "Courier New", monospace';
+    ctx.fillStyle = '#16a085';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('每一步，都是下一条指令的输入', W / 2, H * 0.9);
+    ctx.restore();
+  }
+}
+
+/* 短片七：中国 AI 落地场景 */
+function drawCardFactory(ctx, x, y, w, h, t, color){
+  const floorY = y + h * 0.75;
+  ctx.fillStyle = 'rgba(244,235,217,0.15)';
+  ctx.fillRect(x, floorY, w, 4);
+  for (let i = 0; i < 3; i++) {
+    const bx = x + ((t * 30 + i * w / 3) % (w + 20)) - 20;
+    ctx.fillStyle = color;
+    ctx.fillRect(bx, floorY - 10, 10, 10);
+  }
+  const ax = x + w * 0.6;
+  const ay = y + h * 0.2;
+  const swing = Math.sin(t * 2) * 0.3;
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 3;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(ax, ay + h * 0.3);
+  ctx.lineTo(ax + Math.cos(Math.PI / 2 + swing) * 25, ay + h * 0.3 + Math.sin(Math.PI / 2 + swing) * 25);
+  ctx.stroke();
+}
+function drawCardCity(ctx, x, y, w, h, t, color){
+  const cx = x + w / 2, cy = y + h / 2;
+  ctx.strokeStyle = 'rgba(244,235,217,0.2)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(x, cy); ctx.lineTo(x + w, cy);
+  ctx.moveTo(cx, y); ctx.lineTo(cx, y + h);
+  ctx.stroke();
+  const cars = [
+    { px: x + ((t * 40) % (w + 10)) - 5, py: cy - 3 },
+    { px: x + w - ((t * 35) % (w + 10)), py: cy + 3 },
+    { px: cx - 3, py: y + ((t * 30) % (h + 10)) - 5 },
+    { px: cx + 3, py: y + h - ((t * 38) % (h + 10)) }
+  ];
+  cars.forEach(c => {
+    ctx.fillStyle = color;
+    ctx.fillRect(c.px, c.py, 5, 5);
+  });
+}
+function drawCardPay(ctx, x, y, w, h, t, color){
+  const size = Math.min(w, h) * 0.62;
+  const qx = x + (w - size) / 2;
+  const qy = y + (h - size) / 2;
+  const n = 7;
+  const cell = size / n;
+  for (let i = 0; i < n; i++) {
+    for (let j = 0; j < n; j++) {
+      const seed = ((i * 7 + j * 13) % 3);
+      if (seed === 0 || (i < 2 && j < 2) || (i > n - 3 && j < 2) || (i < 2 && j > n - 3)) {
+        ctx.fillStyle = color;
+        ctx.fillRect(qx + i * cell, qy + j * cell, cell - 1, cell - 1);
+      }
+    }
+  }
+  const scanY = qy + ((t * 30) % size);
+  ctx.fillStyle = 'rgba(46,204,113,0.6)';
+  ctx.fillRect(qx, scanY, size, 2);
+}
+function drawCardDrive(ctx, x, y, w, h, t, color){
+  const roadY = y + h / 2;
+  ctx.fillStyle = 'rgba(244,235,217,0.1)';
+  ctx.fillRect(x, roadY - 12, w, 24);
+  ctx.strokeStyle = 'rgba(244,235,217,0.4)';
+  ctx.setLineDash([8, 8]);
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(x, roadY); ctx.lineTo(x + w, roadY);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  const carX = x + ((t * 50) % (w + 30)) - 15;
+  ctx.fillStyle = color;
+  ctx.fillRect(carX, roadY - 6, 14, 12);
+  const waveR = 6 + ((t * 3) % 1) * 16;
+  const waveA = 1 - ((t * 3) % 1);
+  ctx.beginPath();
+  ctx.arc(carX + 14, roadY, waveR, -Math.PI / 3, Math.PI / 3);
+  ctx.strokeStyle = 'rgba(46,204,113,' + (waveA * 0.6) + ')';
+  ctx.lineWidth = 1;
+  ctx.stroke();
+}
+function drawCardMedical(ctx, x, y, w, h, t, color){
+  ctx.fillStyle = 'rgba(244,235,217,0.08)';
+  ctx.fillRect(x + 4, y + 4, w - 8, h - 8);
+  ctx.strokeStyle = 'rgba(244,235,217,0.3)';
+  ctx.lineWidth = 1;
+  for (let i = 0; i < 4; i++) {
+    ctx.beginPath();
+    ctx.arc(x + w / 2, y + h * 0.2 + i * h * 0.18, w * 0.3, 0.2, Math.PI - 0.2);
+    ctx.stroke();
+  }
+  const scanY = y + 4 + ((t * 25) % (h - 8));
+  ctx.fillStyle = 'rgba(155,89,182,0.5)';
+  ctx.fillRect(x + 4, scanY, w - 8, 2);
+  const markA = Math.sin(t * 3) * 0.5 + 0.5;
+  ctx.fillStyle = 'rgba(192,57,43,' + (0.5 + markA * 0.5) + ')';
+  ctx.beginPath();
+  ctx.arc(x + w * 0.65, y + h * 0.55, 4, 0, Math.PI * 2);
+  ctx.fill();
+}
+function drawCardEdu(ctx, x, y, w, h, t, color){
+  ctx.fillStyle = 'rgba(22,27,34,0.8)';
+  ctx.fillRect(x + 4, y + 4, w - 8, h - 8);
+  const lines = ['E = mc²', '∫ f(x)dx', 'AI = ∑ w·x'];
+  const charsTotal = lines.join('').length;
+  const written = Math.floor(Math.min(1, t / 8) * charsTotal);
+  let count = 0;
+  ctx.font = Math.min(w * 0.08, 12) + 'px "Courier New", monospace';
+  ctx.fillStyle = color;
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'top';
+  lines.forEach((line, i) => {
+    const remaining = Math.max(0, written - count);
+    const show = line.slice(0, remaining);
+    if (show.length > 0) {
+      ctx.fillText(show, x + 10, y + 12 + i * (h * 0.26));
+    }
+    count += line.length;
+  });
+}
+function drawChina(ctx, W, H, t, D){
+  ctx.fillStyle = '#0a0e14';
+  ctx.fillRect(0, 0, W, H);
+  const cards = [
+    { title: '智能制造', color: '#e67e22', draw: drawCardFactory },
+    { title: '城市大脑', color: '#16a085', draw: drawCardCity },
+    { title: '移动支付', color: '#c0392b', draw: drawCardPay },
+    { title: '自动驾驶', color: '#2ecc71', draw: drawCardDrive },
+    { title: '医疗影像', color: '#9b59b6', draw: drawCardMedical },
+    { title: '智慧教育', color: '#3498db', draw: drawCardEdu }
+  ];
+  const cols = 3, rows = 2;
+  const gap = W * 0.025;
+  const cardW = (W - gap * (cols + 1)) / cols;
+  const cardH = (H - gap * (rows + 1) - H * 0.12) / rows;
+  const startY = H * 0.10;
+  ctx.save();
+  ctx.font = 'bold ' + Math.min(W * 0.026, 22) + 'px "Courier New", monospace';
+  ctx.fillStyle = '#f4ebd9';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('中国 AI · 落地场景', W / 2, H * 0.05);
+  ctx.restore();
+  cards.forEach((card, i) => {
+    const appear = Math.max(0, Math.min(1, (t - 0.3 - i * 0.35) / 0.5));
+    if (appear <= 0) return;
+    const col = i % cols;
+    const row = Math.floor(i / cols);
+    const x = gap + col * (cardW + gap);
+    const y = startY + row * (cardH + gap);
+    ctx.save();
+    ctx.globalAlpha = appear;
+    ctx.translate(0, (1 - appear) * 20);
+    ctx.fillStyle = 'rgba(22,27,34,0.9)';
+    roundRect(ctx, x, y, cardW, cardH, 6);
+    ctx.fill();
+    ctx.strokeStyle = card.color;
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+    ctx.font = 'bold ' + Math.min(W * 0.013, 11) + 'px "Courier New", monospace';
+    ctx.fillStyle = card.color;
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'top';
+    ctx.fillText(card.title, x + 10, y + 8);
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(x + 6, y + 24, cardW - 12, cardH - 30);
+    ctx.clip();
+    card.draw(ctx, x + 6, y + 24, cardW - 12, cardH - 30, t, card.color);
+    ctx.restore();
+    ctx.restore();
+  });
+}
+
+/* 短片八：并行训练 */
+function drawParallel(ctx, W, H, t, D){
+  ctx.fillStyle = '#0a0e14';
+  ctx.fillRect(0, 0, W, H);
+  const pad = W * 0.06;
+  const colW = (W - pad * 2) / 3;
+  const topY = H * 0.16;
+  const areaH = H * 0.70;
+  ctx.save();
+  ctx.font = 'bold ' + Math.min(W * 0.020, 16) + 'px "Courier New", monospace';
+  ctx.fillStyle = '#f4ebd9';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'top';
+  ctx.fillText('三种并行，叠成一台机器', W / 2, H * 0.05);
+  ctx.restore();
+  const panelAlpha = Math.min(1, t / 1.2);
+  const panels = [
+    { title: '数据并行', sub: 'Data Parallel', color: '#e67e22', x: pad },
+    { title: '流水线并行', sub: 'Pipeline Parallel', color: '#16a085', x: pad + colW },
+    { title: '张量并行', sub: 'Tensor Parallel', color: '#9b59b6', x: pad + colW * 2 }
+  ];
+  panels.forEach((p, pi) => {
+    const appear = Math.max(0, Math.min(1, (t - 0.3 - pi * 0.4) / 0.5));
+    if(appear <= 0) return;
+    ctx.save();
+    ctx.globalAlpha = appear * panelAlpha;
+    ctx.strokeStyle = 'rgba(244,235,217,0.12)';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(p.x + 4, topY - 6, colW - 8, areaH + 12);
+    ctx.font = 'bold ' + Math.min(W * 0.013, 11) + 'px "Courier New", monospace';
+    ctx.fillStyle = p.color;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'bottom';
+    ctx.fillText(p.title, p.x + colW / 2, topY - 12);
+    ctx.font = Math.min(W * 0.010, 9) + 'px "Courier New", monospace';
+    ctx.fillStyle = 'rgba(244,235,217,0.45)';
+    ctx.fillText(p.sub, p.x + colW / 2, topY - 2);
+    if(pi === 0) drawDataParallel(ctx, p.x + 8, topY + 8, colW - 16, areaH - 16, t, p.color);
+    if(pi === 1) drawPipelineParallel(ctx, p.x + 8, topY + 8, colW - 16, areaH - 16, t, p.color);
+    if(pi === 2) drawTensorParallel(ctx, p.x + 8, topY + 8, colW - 16, areaH - 16, t, p.color);
+    ctx.restore();
+  });
+  const endA = Math.max(0, Math.min(1, (t - 11) / 1.2));
+  if(endA > 0){
+    ctx.save();
+    ctx.globalAlpha = endA;
+    ctx.font = 'bold ' + Math.min(W * 0.016, 14) + 'px "Courier New", monospace';
+    ctx.fillStyle = '#2ecc71';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('通信结构，决定了集群的真实算力', W / 2, H * 0.92);
+    ctx.restore();
+  }
+}
+function drawDataParallel(ctx, x, y, w, h, t, color){
+  const groups = 4;
+  const gH = (h - 12) / groups;
+  for(let g = 0; g < groups; g++){
+    const gy = y + g * (gH + 4);
+    const pulse = Math.sin(t * 2 + g * 0.8) * 0.3 + 0.7;
+    ctx.fillStyle = 'rgba(230,126,34,' + (0.12 * pulse) + ')';
+    ctx.fillRect(x, gy, w, gH);
+    ctx.strokeStyle = 'rgba(230,126,34,0.35)';
+    ctx.strokeRect(x, gy, w, gH);
+    const n = 6;
+    for(let i = 0; i < n; i++){
+      const bx = x + 6 + i * (w - 12) / n;
+      ctx.fillStyle = color;
+      ctx.globalAlpha = 0.35 + 0.4 * Math.sin(t * 3 + g + i);
+      ctx.fillRect(bx, gy + gH * 0.3, (w - 12) / n - 3, gH * 0.4);
+      ctx.globalAlpha = 1;
+    }
+    if(g < groups - 1){
+      ctx.strokeStyle = 'rgba(46,204,113,0.5)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(x + w * 0.5, gy + gH);
+      ctx.lineTo(x + w * 0.5, gy + gH + 4);
+      ctx.stroke();
+      const flow = (t * 60 + g * 20) % 20;
+      ctx.fillStyle = '#2ecc71';
+      ctx.beginPath();
+      ctx.arc(x + w * 0.5, gy + gH + 4 - flow * 0.2, 2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+}
+function drawPipelineParallel(ctx, x, y, w, h, t, color){
+  const stages = 5;
+  const sW = (w - (stages - 1) * 6) / stages;
+  for(let s = 0; s < stages; s++){
+    const sx = x + s * (sW + 6);
+    const active = Math.sin(t * 1.5 - s * 0.6) > -0.2;
+    ctx.fillStyle = active ? 'rgba(22,160,133,0.25)' : 'rgba(244,235,217,0.06)';
+    ctx.fillRect(sx, y + h * 0.1, sW, h * 0.8);
+    ctx.strokeStyle = active ? color : 'rgba(244,235,217,0.15)';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(sx, y + h * 0.1, sW, h * 0.8);
+    ctx.font = Math.min(w * 0.022, 9) + 'px "Courier New", monospace';
+    ctx.fillStyle = active ? color : 'rgba(244,235,217,0.35)';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('L' + (s + 1), sx + sW / 2, y + h * 0.5);
+    if(s < stages - 1){
+      const ax = sx + sW + 3;
+      ctx.strokeStyle = 'rgba(244,235,217,0.3)';
+      ctx.beginPath();
+      ctx.moveTo(ax - 2, y + h * 0.5);
+      ctx.lineTo(ax + 2, y + h * 0.5);
+      ctx.stroke();
+    }
+  }
+  const mb = (t * 1.2) % 1;
+  const mbX = x + mb * w;
+  ctx.fillStyle = 'rgba(46,204,113,0.6)';
+  ctx.fillRect(mbX, y + h * 0.08, 2, h * 0.84);
+}
+function drawTensorParallel(ctx, x, y, w, h, t, color){
+  const rows = 3, cols = 4;
+  const cw = (w - 16) / cols;
+  const ch = (h - 16) / rows;
+  for(let r = 0; r < rows; r++){
+    for(let c = 0; c < cols; c++){
+      const bx = x + 8 + c * cw;
+      const by = y + 8 + r * ch;
+      const phase = Math.sin(t * 2.5 + r * 0.7 + c * 0.5);
+      ctx.fillStyle = 'rgba(155,89,182,' + (0.12 + 0.15 * (phase * 0.5 + 0.5)) + ')';
+      ctx.fillRect(bx + 1, by + 1, cw - 2, ch - 2);
+      ctx.strokeStyle = 'rgba(155,89,182,0.35)';
+      ctx.strokeRect(bx + 1, by + 1, cw - 2, ch - 2);
+      if(phase > 0.3){
+        ctx.fillStyle = color;
+        ctx.globalAlpha = 0.5 + phase * 0.3;
+        ctx.beginPath();
+        ctx.arc(bx + cw / 2, by + ch / 2, 2.5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 1;
+      }
+    }
+  }
+  ctx.strokeStyle = 'rgba(155,89,182,0.2)';
+  ctx.lineWidth = 1;
+  for(let r = 0; r < rows; r++){
+    const ly = y + 8 + r * ch + ch / 2;
+    ctx.beginPath();
+    ctx.moveTo(x + 8, ly);
+    ctx.lineTo(x + w - 8, ly);
+    ctx.stroke();
+  }
+}
+
+/* ============================================================
+   短片播放器
+   ============================================================ */
+const filmRegistry = [];
+function registerFilm(id, duration, drawFn){
+  const canvas = document.getElementById(id);
+  if(!canvas) return null;
+  const stage = canvas.parentElement;
+  const ctx = canvas.getContext('2d');
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const film = {
+    id, duration, canvas, ctx, stage,
+    time: 0, playing: false, last: 0, raf: null,
+    W: 800, H: 450,
+    ui: null,
+    fit(){
+      const rect = stage.getBoundingClientRect();
+      if(rect.width < 20) return;
+      this.W = rect.width;
+      this.H = rect.height;
+      canvas.width = Math.round(this.W * dpr);
+      canvas.height = Math.round(this.H * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      drawFn(ctx, this.W, this.H, this.time, this.duration);
+    },
+    start(){
+      if(this.playing) return;
+      this.playing = true;
+      this.last = performance.now();
+      const self = this;
+      const step = (now) => {
+        if(!self.playing) return;
+        const dt = Math.min((now - self.last) / 1000, 0.06);
+        self.last = now;
+        self.time += dt;
+        if(self.time > self.duration) self.time = 0;
+        drawFn(ctx, self.W, self.H, self.time, self.duration);
+        self.updateUI();
+        self.raf = requestAnimationFrame(step);
+      };
+      this.raf = requestAnimationFrame(step);
+      if(this.ui && this.ui.btn) this.ui.btn.textContent = '❚❚';
+    },
+    stop(){
+      this.playing = false;
+      if(this.raf) cancelAnimationFrame(this.raf);
+      if(this.ui && this.ui.btn) this.ui.btn.textContent = '▶';
+    },
+    seek(pct){
+      this.time = Math.max(0, Math.min(1, pct)) * this.duration;
+      drawFn(ctx, this.W, this.H, this.time, this.duration);
+      this.updateUI();
+    },
+    updateUI(){
+      if(!this.ui) return;
+      const pct = (this.time / this.duration) * 100;
+      this.ui.fill.style.width = pct + '%';
+      this.ui.timeEl.textContent = formatTime(this.time) + ' / ' + formatTime(this.duration);
+    }
+  };
+  const btn = stage.querySelector('[data-action="toggle"]');
+  const fill = stage.querySelector('.film-fill');
+  const timeEl = stage.querySelector('.film-time');
+  const prog = stage.querySelector('.film-progress');
+  const hud = stage.querySelector('.film-hud');
+  film.ui = { btn, fill, timeEl };
+  if(btn){
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      if(film.playing) film.stop();
+      else film.start();
+    });
+  }
+  if(prog){
+    prog.addEventListener('click', e => {
+      e.stopPropagation();
+      const rect = prog.getBoundingClientRect();
+      film.seek((e.clientX - rect.left) / rect.width);
+    });
+  }
+  if(hud){
+    hud.addEventListener('mouseenter', () => hud.classList.add('playing'));
+    hud.addEventListener('mouseleave', () => { if(!film.playing) hud.classList.remove('playing'); });
+  }
+  requestAnimationFrame(() => {
+    film.fit();
+    film.updateUI();
+  });
+  window.addEventListener('resize', () => film.fit());
+  filmRegistry.push(film);
+  return film;
+}
+
+/* ============================================================
+   音频
+   ============================================================ */
+let audioCtx;
+function initAudio(){ if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+function playSound(type){
+  if(!audioCtx) return;
+  const osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
+  osc.connect(gain); gain.connect(audioCtx.destination);
+  const now = audioCtx.currentTime;
+  if(type === 'click'){
+    osc.type = 'square'; osc.frequency.setValueAtTime(800, now);
+    osc.frequency.exponentialRampToValueAtTime(300, now + .1);
+    gain.gain.setValueAtTime(.08, now); gain.gain.exponentialRampToValueAtTime(.01, now + .1);
+    osc.start(now); osc.stop(now + .1);
+  } else if(type === 'slide'){
+    osc.type = 'sine'; osc.frequency.setValueAtTime(180, now);
+    osc.frequency.exponentialRampToValueAtTime(520, now + .28);
+    gain.gain.setValueAtTime(.045, now); gain.gain.exponentialRampToValueAtTime(.001, now + .28);
+    osc.start(now); osc.stop(now + .28);
+  } else if(type === 'type'){
+    osc.type = 'triangle'; osc.frequency.setValueAtTime(Math.random() * 200 + 600, now);
+    gain.gain.setValueAtTime(.015, now); gain.gain.exponentialRampToValueAtTime(.001, now + .05);
+    osc.start(now); osc.stop(now + .05);
+  }
+}
+
+/* ============================================================
+   光标
+   ============================================================ */
+const cursor = document.getElementById('cursor');
+let mouseX = innerWidth / 2, mouseY = innerHeight / 2, cx = mouseX, cy = mouseY;
+document.addEventListener('mousemove', e => { mouseX = e.clientX; mouseY = e.clientY; });
+document.addEventListener('mousedown', () => { cursor.classList.add('clicking'); initAudio(); playSound('click'); });
+document.addEventListener('mouseup', () => cursor.classList.remove('clicking'));
+(function renderCursor(){
+  cx += (mouseX - cx) * .2;
+  cy += (mouseY - cy) * .2;
+  cursor.style.left = cx + 'px';
+  cursor.style.top = cy + 'px';
+  requestAnimationFrame(renderCursor);
+})();
+
+/* ============================================================
+   PPT 核心
+   ============================================================ */
+const slides = document.querySelectorAll('.slide');
+const controls = document.getElementById('controls');
+const progressBar = document.getElementById('progress-bar');
+let currentSlide = 0;
+
+slides.forEach((_, i) => {
+  const dot = document.createElement('div');
+  dot.className = 'dot' + (i === 0 ? ' active' : '');
+  dot.addEventListener('click', e => { e.stopPropagation(); goToSlide(i); });
+  controls.appendChild(dot);
+});
+const dots = document.querySelectorAll('.dot');
+
+function syncFilms(){
+  const active = slides[currentSlide];
+  filmRegistry.forEach(f => {
+    if(active.contains(f.canvas)){
+      f.fit();
+      f.start();
+    } else {
+      f.stop();
+    }
+  });
+}
+
+function goToSlide(index){
+  if(index < 0 || index >= slides.length) return;
+  initAudio(); playSound('slide');
+  slides[currentSlide].classList.remove('active');
+  dots[currentSlide].classList.remove('active');
+  currentSlide = index;
+  slides[currentSlide].classList.add('active');
+  dots[currentSlide].classList.add('active');
+  progressBar.style.width = ((currentSlide + 1) / slides.length * 100) + '%';
+  slides[currentSlide].querySelectorAll('.typing').forEach(el => {
+    el.dataset.typed = 'false';
+    triggerTyping(el);
+  });
+  if(slides[currentSlide].dataset.matrix) startMatrix();
+  else stopMatrix();
+  syncFilms();
+}
+
+document.addEventListener('keydown', e => {
+  if(['ArrowRight','ArrowDown',' '].includes(e.key)){ e.preventDefault(); goToSlide(currentSlide + 1); }
+  if(['ArrowLeft','ArrowUp'].includes(e.key)){ e.preventDefault(); goToSlide(currentSlide - 1); }
+});
+
+let wheelLock = false;
+window.addEventListener('wheel', e => {
+  if(wheelLock) return;
+  wheelLock = true;
+  setTimeout(() => wheelLock = false, 600);
+  e.deltaY > 0 ? goToSlide(currentSlide + 1) : goToSlide(currentSlide - 1);
+});
+
+document.getElementById('ppt-container').addEventListener('click', e => {
+  if(e.target.closest('button') || e.target.closest('input') ||
+     e.target.closest('.film-stage') ||
+     e.target.closest('.flip-card') || e.target.closest('.turing-box') ||
+     e.target.closest('.eigen-panel') || e.target.closest('.scale-interactive') ||
+     e.target.closest('.policy-slider-wrap') || e.target.closest('#controls') ||
+     e.target.closest('.train-stage') || e.target.closest('.cluster-panel')) return;
+  e.clientX > innerWidth / 2 ? goToSlide(currentSlide + 1) : goToSlide(currentSlide - 1);
+});
+
+/* ============================================================
+   打字机
+   ============================================================ */
+function triggerTyping(el){
+  if(el.dataset.typed === 'true') return;
+  el.dataset.typed = 'true';
+  const text = el.innerText;
+  el.innerText = '';
+  let i = 0;
+  (function type(){
+    if(i < text.length){
+      el.innerHTML += text.charAt(i);
+      if(i % 3 === 0) playSound('type');
+      i++;
+      setTimeout(type, Math.random() * 38 + 22);
+    }
+  })();
+}
+setTimeout(() => {
+  slides[0].querySelectorAll('.typing').forEach(triggerTyping);
+  progressBar.style.width = (1 / slides.length * 100) + '%';
+}, 400);
+
+/* ============================================================
+   代码雨
+   ============================================================ */
+function startMatrix(){
+  const box = document.querySelector('.matrix-bg');
+  if(!box || box.children.length) return;
+  box.innerHTML = '';
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*';
+  const cols = Math.floor(innerWidth / 20);
+  for(let i = 0; i < cols; i++){
+    const col = document.createElement('div');
+    col.className = 'matrix-col';
+    col.style.left = i * 20 + 'px';
+    col.style.animationDuration = (Math.random() * 3 + 2) + 's';
+    col.style.animationDelay = -(Math.random() * 5) + 's';
+    let txt = '';
+    for(let j = 0; j < 28; j++) txt += chars[Math.floor(Math.random() * chars.length)] + '<br>';
+    col.innerHTML = txt;
+    box.appendChild(col);
+  }
+}
+function stopMatrix(){
+  const box = document.querySelector('.matrix-bg');
+  if(box) box.innerHTML = '';
+}
+
+/* ============================================================
+   图灵测试
+   ============================================================ */
+let turingRound = 0, turingCorrect = 0, turingIsHuman = false;
+const turingHumanReplies = [
+  "嗯……这个问题有点难，让我想想。",
+  "我猜是吧？不过我也说不太准。",
+  "今天天气不错，你觉得呢？"
+];
+const turingAIReplys = [
+  "根据我的分析，这个问题存在多种解释路径。",
+  "我理解你的意思。需要我进一步展开吗？",
+  "从统计模式来看，这是一个高频话题。"
+];
+function startTuring(){
+  turingRound = 0; turingCorrect = 0;
+  document.getElementById('turing-log').innerHTML = '';
+  document.getElementById('turing-score').textContent = '';
+  document.getElementById('turing-actions').innerHTML = '';
+  nextTuringRound();
+}
+function nextTuringRound(){
+  if(turingRound >= 3){
+    const acc = Math.round(turingCorrect / 3 * 100);
+    document.getElementById('turing-score').textContent =
+      `三轮结束 · 你的判断准确率：${acc}%` +
+      (acc >= 67 ? ' · 图灵测试对你失效了' : ' · 你仍能识破多数伪装');
+    document.getElementById('turing-actions').innerHTML =
+      '<button class="btn-cyber" onclick="startTuring()">再来一次</button>';
+    return;
+  }
+  turingIsHuman = Math.random() > .5;
+  const log = document.getElementById('turing-log');
+  log.innerHTML += `<div class="turing-q">Q${turingRound + 1}：你觉得自己有意识吗？</div>`;
+  setTimeout(() => {
+    const reply = turingIsHuman ? turingHumanReplies[turingRound] : turingAIReplys[turingRound];
+    log.innerHTML += `<div class="turing-a">${reply}</div>`;
+    document.getElementById('turing-actions').innerHTML =
+      `<button class="btn-cyber" onclick="judgeTuring(true)">对方是人类</button>
+       <button class="btn-cyber" onclick="judgeTuring(false)">对方是 AI</button>`;
+    log.scrollTop = log.scrollHeight;
+  }, 420);
+}
+function judgeTuring(guessHuman){
+  if(guessHuman === turingIsHuman) turingCorrect++;
+  document.getElementById('turing-log').innerHTML +=
+    `<div class="turing-verdict">→ 实际是${turingIsHuman ? '人类' : 'AI'} · ${guessHuman === turingIsHuman ? '✓ 正确' : '✗ 错误'}</div>`;
+  turingRound++;
+  document.getElementById('turing-actions').innerHTML = '';
+  setTimeout(nextTuringRound, 480);
+}
+
+/* ============================================================
+   政策时间滑块
+   ============================================================ */
+const policyData = {
+  2025: { scale: '1.2 万亿元', firms: '6,600+ 家', compute: '2,592 EFLOPS', w: [12, 33, 13] },
+  2026: { scale: '1.8 万亿元', firms: '8,200+ 家', compute: '4,100 EFLOPS', w: [18, 41, 21] },
+  2027: { scale: '2.7 万亿元', firms: '10,000+ 家', compute: '6,200 EFLOPS', w: [27, 50, 31] },
+  2028: { scale: '3.9 万亿元', firms: '12,500+ 家', compute: '9,000 EFLOPS', w: [39, 63, 45] },
+  2029: { scale: '5.3 万亿元', firms: '15,000+ 家', compute: '12,500 EFLOPS', w: [53, 75, 63] },
+  2030: { scale: '6.8 万亿元', firms: '17,000+ 家', compute: '16,000 EFLOPS', w: [68, 85, 80] },
+  2031: { scale: '8.0 万亿元', firms: '18,000+ 家', compute: '17,500 EFLOPS', w: [80, 90, 88] },
+  2032: { scale: '8.8 万亿元', firms: '18,800+ 家', compute: '18,500 EFLOPS', w: [88, 94, 93] },
+  2033: { scale: '9.4 万亿元', firms: '19,400+ 家', compute: '19,200 EFLOPS', w: [94, 97, 96] },
+  2034: { scale: '10 万亿元+', firms: '20,000+ 家', compute: '20,000+ EFLOPS', w: [100, 100, 100] }
+};
+const policySlider = document.getElementById('policyYear');
+if(policySlider){
+  policySlider.addEventListener('input', e => {
+    const yr = e.target.value;
+    const d = policyData[yr] || policyData[2025];
+    document.getElementById('policyYearLabel').textContent = yr;
+    document.getElementById('metricScale').textContent = d.scale;
+    document.getElementById('metricFirms').textContent = d.firms;
+    document.getElementById('metricCompute').textContent = d.compute;
+    ['barScale','barFirms','barCompute'].forEach((id, i) => {
+      document.getElementById(id).style.setProperty('--w', d.w[i] + '%');
+    });
+  });
+}
+
+/* ============================================================
+   Eigen 面板
+   ============================================================ */
+function runEigen(){
+  const btn = document.getElementById('eigenBtn');
+  const out = document.getElementById('eigenOutput');
+  const steps = document.querySelectorAll('.eigen-step');
+  if(btn.disabled) return;
+  btn.disabled = true;
+  steps.forEach(s => s.classList.remove('done', 'active'));
+  out.textContent = '> 解析工程需求...\n';
+  const lines = [
+    '> [1/5] 硬件组态：识别 PLC 型号与 I/O 模块 ... OK',
+    '> [2/5] PLC 逻辑编程：生成梯形图与结构化文本 ... OK',
+    '> [3/5] HMI 画面生成：绑定变量与报警 ... OK',
+    '> [4/5] 驱动配置：匹配变频器参数 ... OK',
+    '> [5/5] 文档撰写与交叉验证 ... OK',
+    '> 任务完成。工程效率提升 ≈ 50%，方案质量提升 ≈ 80%。'
+  ];
+  let i = 0;
+  (function next(){
+    if(i >= lines.length){ btn.disabled = false; return; }
+    out.textContent += lines[i] + '\n';
+    if(i < steps.length){
+      steps[i].classList.add('done');
+      if(i + 1 < steps.length) steps[i + 1].classList.add('active');
+    }
+    i++;
+    setTimeout(next, 520);
+  })();
+}
+
+/* ============================================================
+   监管天平
+   ============================================================ */
+const fedSlider = document.getElementById('fedWeight');
+if(fedSlider){
+  fedSlider.addEventListener('input', e => {
+    const v = +e.target.value;
+    const deg = (v - 50) * .14;
+    document.getElementById('scaleBeam').style.transform = `rotate(${deg}deg)`;
+    const verdict = document.getElementById('scaleVerdict');
+    if(v < 25) verdict.textContent = '州权主导 · 算法问责分散但灵活';
+    else if(v > 75) verdict.textContent = '联邦主导 · 统一标准但可能挤压州级创新';
+    else verdict.textContent = '当前：联邦与州势均力敌';
+  });
+}
+
+/* ============================================================
+   BGM 与旁白
+   ============================================================ */
+let bgmAudio = null, bgmOn = false;
+function toggleBGM(){
+  const btn = document.getElementById('bgmToggle');
+  if(!bgmAudio){
+    bgmAudio = new Audio('https://cdn.pixabay.com/download/audio/2024/10/18/audio_883a8b2ed8.mp3');
+    bgmAudio.loop = true;
+    bgmAudio.volume = .18;
+  }
+  if(bgmOn){ bgmAudio.pause(); bgmOn = false; btn.classList.remove('on'); }
+  else { bgmAudio.play().catch(()=>{}); bgmOn = true; btn.classList.add('on'); }
+}
+function toggleNarration(){
+  if(!('speechSynthesis' in window)) return;
+  const title = document.querySelector('.slide.active .big-title');
+  if(!title) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(title.innerText);
+  u.lang = 'zh-CN'; u.rate = .95; u.pitch = 1;
+  speechSynthesis.speak(u);
+}
+
+/* ============================================================
+   初始化短片
+   ============================================================ */
+window.addEventListener('load', () => {
+  registerFilm('film-bits', 14, drawBits);
+  registerFilm('film-data', 12, drawData);
+  registerFilm('film-factory', 12, drawFactory);
+  registerFilm('film-scale', 12, drawScale);
+  registerFilm('film-tia', 14, drawTia);
+  registerFilm('film-timeline', 16, drawTimeline);
+  registerFilm('film-china', 14, drawChina);
+  registerFilm('film-parallel', 14, drawParallel);
+  setTimeout(syncFilms, 300);
+});
+</script>
+</body>
+</html>
